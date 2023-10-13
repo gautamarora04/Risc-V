@@ -20,37 +20,23 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module alu(a,b,alucontrol,out);
-input [31:0] a, b;
-input [2:0] alucontrol;
-output [31:0] out;
+module alu(A,B,ALUControl,Result);
 
-wire [31:0] a_and_b;
-wire [31:0] a_or_b;
-wire [31:0] b_not;
+input [31:0]A,B;
+input [3:0]ALUControl;
+output [31:0] Result;
 
-wire [31:0] alu_mux;
+assign Result = (ALUControl[3:0]==4'b0000) ?A+B: 
+               (ALUControl[3:0]==4'b0001)?A-B: 
+               (ALUControl[3:0]==4'b0010)?A&B:
+               (ALUControl[3:0]==4'b0011)?A|B:
+               (ALUControl[3:0]==4'b0100)?A^B:
+               (ALUControl[3:0]==4'b0101)?A>>1:
+               (ALUControl[3:0]==4'b0110)?A<<1:
+               (ALUControl[3:0]==4'b0111)?A>>>1:
+               (ALUControl[3:0]==4'b1000)?($signed(A)<$signed(B))?1:0:
+               (ALUControl[3:0]==4'b1001)?(A<B)?1:0:0;
+            //    (ALUControl[3:0]==4'b1010)?B:0;
 
-wire [31:0] sum;
-
-wire [31:0] out_mux;
-// logical design : and, or, not 
-assign a_and_b = a&b;
-assign a_or_b  = a|b;
-assign b_not = ~b;
-
-// terneray operator
-
-assign alu_mux = (alucontrol[0] == 1'b0) ? b : b_not;
-
-// addition or subtraction 
-
-assign sum = a + alu_mux + alucontrol[0];
-
-assign out_mux = (alucontrol[1:0] == 2'b00) ? sum :
-                 (alucontrol[1:0] == 2'b01) ? sum :
-                 (alucontrol[1:0] == 2'b10) ? a_and_b : a_or_b;
-                  
-assign out = out_mux;
 
 endmodule
